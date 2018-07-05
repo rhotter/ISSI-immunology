@@ -27,7 +27,7 @@ def exclusionItterator(x):
     return True
 
 #takes tab separated txt file as input and stores filtered rows in array
-with open("../total.txt","r") as f:
+with open("../data/total.txt","r") as f:
 
     readerList = list(csv.reader(f, delimiter='\t'))
 
@@ -42,11 +42,11 @@ with open("../total.txt","r") as f:
     headings = readerList[0]
 
 #writes txt file that only contains filtered rows
-with open("filteredTotal.txt", "w") as f:
+with open("../data/filteredTotal.txt", "w") as f:
     writer = csv.writer(f, delimiter ="\t")
     writer.writerow(headings)
     for row in fullFiltered:
         writer.writerow(row)
 
-with open("filteredTotal.txt", "r") as f:
+with open("../data/filteredTotal.txt", "r") as f:
     filteredPosition.append(f.readline().split("  ")[2])
