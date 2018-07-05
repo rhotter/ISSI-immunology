@@ -11,7 +11,8 @@ import csv
 incFilters = [(0,["smMIP_Old_P7_index17_S17"])]
 excFilters = []
 
-filteredPosition = []
+totalPositions = []
+freqPositions = []
 
 #itterates through filters and return true if value corresponds in column
 def inclusionItterator(x):
@@ -25,6 +26,14 @@ def exclusionItterator(x):
         if x[filt[0]] in filt[1]:
             return False
     return True
+
+def positionItterator():
+    for t in totalPositions:
+        for f in freqPositions:
+            if t == f:
+                return True
+            else:
+                return False
 
 #takes tab separated txt file as input and stores filtered rows in array
 with open("../data/total.txt","r") as f:
@@ -49,4 +58,19 @@ with open("../data/filteredTotal.txt", "w") as f:
         writer.writerow(row)
 
 with open("../data/filteredTotal.txt", "r") as f:
-    filteredPosition.append(f.readline().split("  ")[2])
+    next(f)
+    for line in f:
+          totalPositions.append(line.split()[2])
+
+with open("../data/smMIP_Old_P7_index17_S17.sorted.rg.realigned.freq.paired.Q30.txt","r") as f:
+    next(f)
+    for line in f:
+        freqPositions.append(line.split()[2])
+
+    readerList = list(csv.reader(f, delimiter='\t'))
+    posFiltered = filter(positionItterator, readerList)
+
+
+
+
+
