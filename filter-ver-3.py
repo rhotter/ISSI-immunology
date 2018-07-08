@@ -29,6 +29,8 @@ def exclusionItterator(x):
     return True
 
 def chi_squaredFunc(n1,n2,N1,N2,c):
+    if N1 == 0 and N2 == 0:
+        return -2
     if n1 < 0 or N1-n1 < 0 or n2 < 0 or N2-n2 < 0:
         return -1
     else:
@@ -98,6 +100,8 @@ while i in range(0,len(filteredTotal)):
     if j < 0:
         print(i,j)
         print(filteredTotal[i][2])
+
+    # assumes unique nucleotide positions in Total file
     if filteredTotal[i][2] == filteredFreq[j][1]:
         mut = mutations[filteredTotal[j][5]]
         chi_squared = chi_squaredFunc(int(filteredFreq[j][mut[0]]),
@@ -105,7 +109,8 @@ while i in range(0,len(filteredTotal)):
                                       int(filteredFreq[j][4]),
                                       int(filteredFreq[j][5]),
                                       filteredTotal[i][2])
-        filteredTotalChi.append(filteredTotal[i]+[str(chi_squared)])
+        if chi_squared == -2:
+            filteredTotalChi.append(filteredTotal[i]+[str(chi_squared)])
         i += 1
     else:
         k += 1
