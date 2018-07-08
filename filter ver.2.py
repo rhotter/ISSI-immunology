@@ -8,11 +8,13 @@ ISSI, team Noa Chapal
 import csv
 
 # list of inclusion and exclusion filters by column and value
-incFilters = [(0,["smMIP_Old_P7_index17_S17"]), (6,["exonic"])]
+incFilters = [(0,["smMIP_Old_P7_index8_S8", "smMIP_Old_P7_index17_S17", "smMIP_P7_index20_S34","smMIP_P7_index32_S46" ]), (6,["exonic"])]
 excFilters = []
 
-# array that stores the positions for the filtered total file
-totalPositions = []
+#stores set of positions for each index
+patientsPositions = []
+#array of current set of positions that will be pushed to patientsPositions
+patientPositions = []
 
 
 # itterates through filters and return true if value corresponds in column
@@ -48,21 +50,44 @@ with open("../data/total.txt","r") as f:
 with open("../data/filteredTotal.txt", "w") as f:
     writer = csv.writer(f, delimiter ="\t")
     writer.writerow(headings)
+    previousRow = " "
+    firstItt = True
+
     for row in fullFiltered:
         writer.writerow(row)
-        totalPositions.append(row[2])
 
-# reads frequency file and filters out the rows that correspond to positions in the total file
-with open("../data/smMIP_Old_P7_index17_S17.sorted.rg.realigned.freq.paired.Q30.txt","r") as f:
-    next(f)
-    readerList = list(csv.reader(f, delimiter='\t'))
-    posFiltered = filter(lambda x:x[1] in totalPositions, readerList)
+        # stores the index in first element of array for each position set
+        patientTitle = row[0]
 
-# writes a filtered frequency file that only contains filtered positions
-with open("../data/filteredFrequency.txt","w") as f:
-    writer = csv.writer(f, delimiter="\t")
-    for row in posFiltered:
-        writer.writerow(row)
+        if firstItt == True:
+            patientPositions.append(patientTitle)
+            firstItt = False
 
+        # creates new array whenever there is a change in index
+        if row[0] == previousRow or previousRow == " ":
+            patientPositions.append(row[2])
+        else:
+            patientsPositions.append(patientPositions)
+            patientPositions = []
+            patientPositions.append(patientTitle)
+            patientPositions.append(row[2])
 
+        previousRow = row[0]
+
+    #push the current set of positions to an ordered array by index
+    patientsPositions.append(patientPositions)
+    patientPositions = []
+
+# reads frequency file for each index and filters out the rows
+# that correspond to positions in the filtered total file
+for i in patientsPositions:
+    with open("../data/frequencyFiles/" + i[0] + ".sorted.rg.realigned.freq.paired.Q30.txt","r") as f:
+        next(f)
+        readerList = list(csv.reader(f, delimiter='\t'))
+        posFiltered = filter(lambda x:x[1] in i[1:], readerList)
+
+    with open("../data/frequencyFiles/filtered/"+ i[0] +"-filtered.txt","w") as f:
+        writer = csv.writer(f, delimiter="\t")
+        for row in posFiltered:
+            writer.writerow(row)
 
