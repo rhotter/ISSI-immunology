@@ -1,10 +1,10 @@
 # Removes duplciates from frequency file
 
 import csv
-paths = ["../data/smMIP_Old_P7_index17_S17.sorted.rg.realigned.freq.paired.Q30.txt",
-         "../data/smMIP_Old_P7_index17_S17.sorted.rg.realigned.freq.paired.Q30.txt",
-         "../data/smMIP_Old_P7_index17_S17.sorted.rg.realigned.freq.paired.Q30.txt",
-         "../data/smMIP_Old_P7_index17_S17.sorted.rg.realigned.freq.paired.Q30.txt"]
+paths = ["../data/frequencyFiles/smMIP_Old_P7_index8_S8.sorted.rg.realigned.freq.paired.Q30.txt",
+         "../data/frequencyFiles/smMIP_Old_P7_index17_S17.sorted.rg.realigned.freq.paired.Q30.txt",
+         "../data/frequencyFiles/smMIP_P7_index20_S34.sorted.rg.realigned.freq.paired.Q30.txt",
+         "../data/frequencyFiles/smMIP_P7_index32_S46.sorted.rg.realigned.freq.paired.Q30.txt"]
 for path in paths:
     with open(path,"r") as f:
         readerList = list(csv.reader(f, delimiter='\t'))

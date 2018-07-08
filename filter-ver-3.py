@@ -51,7 +51,7 @@ with open("../data/filteredTotal.txt", "w") as f:
         writer.writerow(row)
 
 # Matching elements from total to frequency
-with open("../data/smMIP_Old_P7_index17_S17.sorted.rg.realigned.freq.paired.Q30.txt","r") as f:
+with open("../data/frequencyFiles/smMIP_Old_P7_index17_S17.sorted.rg.realigned.freq.paired.Q30.txt","r") as f:
     next(f)
     freqList = list(csv.reader(f, delimiter='\t'))
 filteredTotal = list(filter(lambda x: x[0]=='smMIP_Old_P7_index17_S17', fullFiltered))
@@ -75,13 +75,11 @@ i = 0
 # fix for duplicate totals
 while i in range(0,len(filteredTotal)):
     j = i - k
-    print(len(filteredFreq))
-    if j == len(filteredFreq):
-        print('j: '+j)
     if filteredTotal[i][2] == filteredFreq[j]:
         mut = mutations[filteredTotal[j][6]]
         chi_squared = chi_squared(filteredFreq[j][mut[0]],filteredFreq[j][mut[1]],filteredFreq[j][4],filteredFreq[j][5])
-        filteredTotalChi.append(filteredTotal.append(chi_squared))
+        newRow = filteredTotal[i]
+        filteredTotalChi.append(newRow.append(chi_squared))
         i += 1
     else:
         k += 1
