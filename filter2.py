@@ -1,15 +1,12 @@
 """
-5 Jul. 2018
-
-ISSI, team Noa Chapal
-
+    This file runs the different filter parameters and creates a new filtered total file that respects
+    the specified parameters. In addition, the respective frequency files for each index are filtered
+    to only include positions that are included in the total file.
 """
 
 import csv
+from app import incFilters, excFilters
 
-# list of inclusion and exclusion filters by column and value
-incFilters = [(0,["smMIP_Old_P7_index8_S8", "smMIP_Old_P7_index17_S17", "smMIP_P7_index20_S34","smMIP_P7_index32_S46" ]), (6,["exonic"])]
-excFilters = []
 
 #stores set of positions for each index
 patientsPositions = []
@@ -80,14 +77,18 @@ with open("../data/filteredTotal.txt", "w") as f:
 
 # reads frequency file for each index and filters out the rows
 # that correspond to positions in the filtered total file
-for i in patientsPositions:
-    with open("../data/frequencyFiles/" + i[0] + ".sorted.rg.realigned.freq.paired.Q30.txt","r") as f:
-        next(f)
-        readerList = list(csv.reader(f, delimiter='\t'))
-        posFiltered = filter(lambda x:x[1] in i[1:], readerList)
+    for i in patientsPositions:
+        try:
+            with open("../data/frequencyFiles/" + i[0] + ".sorted.rg.realigned.freq.paired.Q30.txt","r") as f:
+                next(f)
+                readerList = list(csv.reader(f, delimiter='\t'))
+                posFiltered = filter(lambda x:x[1] in i[1:], readerList)
 
-    with open("../data/frequencyFiles/filtered/"+ i[0] +"-filtered.txt","w") as f:
-        writer = csv.writer(f, delimiter="\t")
-        for row in posFiltered:
-            writer.writerow(row)
+            with open("../data/frequencyFiles/filtered/"+ i[0] +"-filtered.txt","w") as f:
+                writer = csv.writer(f, delimiter="\t")
+                for row in posFiltered:
+                    writer.writerow(row)
+        except IOError:
+            print("frequency file missing for: " + i[0])
+
 
