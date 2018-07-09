@@ -1,7 +1,6 @@
 import csv
 
 newTable = []
-vcfType = ""
 
 # itterates through filters and return true if value corresponds in column
 def inclusionItterator(x):
@@ -36,11 +35,15 @@ for row in readerList:
 vcfDict = {
     'platypus': {
         'NR': 4,
-        'NV': 5
+        'NV': 5,
+        'DP': 3,
+        'minDP': 0
     },
     'varscan': {
         'NR': 4,
-        'NV': 5
+        'NV': 5,
+        'DP': 3,
+        'minDP': 0
     }
 }
 
@@ -48,18 +51,21 @@ initialHeadingSize = 10
 
 for patient in patientTitles:
     for vcfType in ['platypus','varscan']:
+        newTable = []
         # Generate array with relevant VCF
         try:
             with open("../data/vcf/" + patient + ".sorted.rg.realigned." + vcfType + ".annovar.vcf.hg19_multianno.vcf","r") as f:
                 readerList = list(csv.reader(f, delimiter='\t'))
                 start = False
                 # needs to be cleaned up
-                for row in readerList:
+                for row in readerList: # while loop with list
                     if start:
                         data = row[9].split(':')
                         info = row[7].split(';')
                         NR = int(data[vcfDict[vcfType]['NR']])
                         NV = int(data[vcfDict[vcfType]['NV']])
+                        DP = [int(data[vcfDict[vcfType]['DP']])]
+
                         isExonic = getValue(info, "ExonicFunc.refGene=")
 
                         try:
@@ -67,25 +73,26 @@ for patient in patientTitles:
                         except ZeroDivisionError:
                             vaf = [-1]
 
-                        newTable.append(row + vaf + isExonic)
+                        newTable.append(row + vaf + isExonic + DP)
 
                     elif row[0] == '#CHROM':
                         start = True
-                        heading = row + ['vaf'] + ['isExonic']
+                        heading = row + ['vaf'] + ['isExonic'] + ['depth']
 
             columns = {
                 'vaf': initialHeadingSize,
-                'isExonic': initialHeadingSize + 1
+                'isExonic': initialHeadingSize + 1,
+                'depth': initialHeadingSize + 2
             }
 
             incFilters = [(columns['isExonic'],[".",'exonic'])]
             excFilters = []
             vaf = [0.02,0.4]
-
+            minDepth = vcfDict[vcfType]['minDP']
 
             incFiltered = filter(inclusionItterator, newTable)
-            # depthFiltered = filter(lambda x: int(x[19]) >= depth, incFiltered)
-            vafFiltered = filter(lambda x: float(x[columns['vaf']]) >= vaf[0] and float(x[columns['vaf']]) <= vaf[1], incFiltered)
+            depthFiltered = filter(lambda x: int(x[columns['depth']]) >= minDepth, incFiltered)
+            vafFiltered = filter(lambda x: float(x[columns['vaf']]) >= vaf[0] and float(x[columns['vaf']]) <= vaf[1], depthFiltered)
             fullFiltered = list(filter(exclusionItterator, vafFiltered))
 
             # vafFiltered = filter(lambda x: float(x[9]) >= vaf[0] and float(x[9]) <= vaf[1], readerList)
@@ -95,7 +102,7 @@ for patient in patientTitles:
                 writer.writerow(heading)
                 for row in fullFiltered:
                     writer.writerow(row)
-            print(initialHeadingSize)
+
         except IOError:
             print('No file for ' + patient + ' ' + vcfType)
 
