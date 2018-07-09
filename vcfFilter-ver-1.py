@@ -53,7 +53,9 @@ for patient in patientTitles:
     for vcfType in ['platypus','varscan']:
         newTable = []
         # Generate array with relevant VCF
-        try:
+        try:\
+
+            # 141455_004_S2_L001.sorted.rg.realigned.varscan.reposed.annovar.vcf.hg19_multianno
             with open("../data/vcf/" + patient + ".sorted.rg.realigned." + vcfType + ".annovar.vcf.hg19_multianno.vcf","r") as f:
                 readerList = list(csv.reader(f, delimiter='\t'))
                 start = False
