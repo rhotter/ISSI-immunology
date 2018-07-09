@@ -9,9 +9,11 @@ import csv
 from scipy import stats
 
 # list of inclusion and exclusion filters by column and value
-incFilters = [(1,["chr10"]),(4,["T"])]
-excFilters = [(6,["UTR5"])]
-
+incFilters = [(9,["nonsynonymous SNV"]),(6,["exonic"])]
+excFilters = []
+depth = 1500
+vaf = [0.02,0.4]
+cutOffP = 0.05
 
 # itterates through filters and return true if value corresponds in column
 def inclusionItterator(x):
@@ -39,7 +41,9 @@ with open("../data/total.txt","r") as f:
     readerList = list(csv.reader(f, delimiter='\t'))
     # runs the inclusion filter (without headings) and then applies exclusion filter
     incFiltered = filter(inclusionItterator, readerList[1:])
-    fullFiltered = list(filter(exclusionItterator, incFiltered))
+    depthFiltered = filter(lambda x:int(x[19]) >= depth, incFiltered)
+    vafFiltered = filter(lambda x: float(x[21]) >= vaf[0] and float(x[21]) <= vaf[1], depthFiltered)
+    fullFiltered = list(filter(exclusionItterator, vafFiltered))
 
     # applies column headings
     headings = readerList[0]
@@ -49,17 +53,13 @@ freqPositions = []
 
 # incFilters = [(0,["smMIP_Old_P7_index17_S17"])]
 
-# writes txt file that only contains filtered rows
-with open("../data/filteredTotal.txt", "w") as f:
-    writer = csv.writer(f, delimiter ="\t")
-    writer.writerow(headings)
-    patientTitles = []
-    lastPatient = []
-    for row in fullFiltered:
-        writer.writerow(row)
-        if row[0] != lastPatient:
-            lastPatient = row[0]
-            patientTitles.append(lastPatient)
+# writes an array of filtered indeces
+patientTitles = []
+lastPatient = []
+for row in fullFiltered:
+    if row[0] != lastPatient:
+        lastPatient = row[0]
+        patientTitles.append(lastPatient)
 
 # Matching elements from total to frequency
 mutations = {
@@ -84,12 +84,18 @@ for patient in patientTitles:
         k = 0
         i = 0
 
+        lastTrue = False
         # fix for duplicate totals
         while i in range(0,len(filteredTotal)):
             j = i - k
-            if j < 0:
-                print(i,j)
-                print(filteredTotal[i][2])
+
+            # print(i,j)
+            # print(filteredTotal[i][2])
+
+            # resolves index issue at the end of array
+            if lastTrue and j >= len(filteredFreq)-1:
+                k += 1
+                j = i - k
 
             # assumes unique nucleotide positions in Total file
             if filteredTotal[i][2] == filteredFreq[j][1]:
@@ -99,19 +105,17 @@ for patient in patientTitles:
                                               int(filteredFreq[j][4]),
                                               int(filteredFreq[j][5]),
                                               filteredTotal[i][2])
-                if chi_squared != -2:
+                if chi_squared == -1 or (chi_squared != -2 and chi_squared >= cutOffP):
                     filteredTotalChi.append(filteredTotal[i]+[str(chi_squared)])
                 i += 1
+                lastTrue = True
             else:
                 k += 1
+                lastTrue = False
     except IOError:
         print("frequency file missing for: " + patient)
 
-with open("../data/filteredTotal.txt", "w") as f:
-    writer = csv.writer(f, delimiter ="\t")
-    writer.writerow(headings)
-    for row in fullFiltered:
-        writer.writerow(row)
+
 
 with open("../data/filteredTotalChi.txt","w") as f:
     writer = csv.writer(f, delimiter ="\t")
