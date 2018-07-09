@@ -60,26 +60,33 @@ for patient in patientTitles:
                 readerList = list(csv.reader(f, delimiter='\t'))
                 start = False
                 # needs to be cleaned up
-                for row in readerList: # while loop with list
-                    if start:
-                        data = row[9].split(':')
-                        info = row[7].split(';')
-                        NR = int(data[vcfDict[vcfType]['NR']])
-                        NV = int(data[vcfDict[vcfType]['NV']])
-                        DP = [int(data[vcfDict[vcfType]['DP']])]
+                readerListLength = len(readerList)
+                i = 0
 
-                        isExonic = getValue(info, "ExonicFunc.refGene=")
-
-                        try:
-                            vaf = [NV/NR]
-                        except ZeroDivisionError:
-                            vaf = [-1]
-
-                        newTable.append(row + vaf + isExonic + DP)
-
-                    elif row[0] == '#CHROM':
-                        start = True
+                # Find start
+                while i in range(0,readerListLength):
+                    if readerList[i][0] == '#CHROM':
+                        row = readerList[i]
+                        start = i + 1
                         heading = row + ['vaf'] + ['isExonic'] + ['depth']
+                    i += 1
+
+                for i in range(start,readerListLength):
+                    row = readerList[i]
+                    data = row[9].split(':')
+                    info = row[7].split(';')
+                    NR = int(data[vcfDict[vcfType]['NR']])
+                    NV = int(data[vcfDict[vcfType]['NV']])
+                    DP = [int(data[vcfDict[vcfType]['DP']])]
+
+                    isExonic = getValue(info, "ExonicFunc.refGene=")
+
+                    try:
+                        vaf = [NV/NR]
+                    except ZeroDivisionError:
+                        vaf = [-1]
+
+                    newTable.append(row + vaf + isExonic + DP)
 
             columns = {
                 'vaf': initialHeadingSize,
@@ -107,4 +114,3 @@ for patient in patientTitles:
 
         except IOError:
             print('No file for ' + patient + ' ' + vcfType)
-
