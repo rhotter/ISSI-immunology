@@ -1,12 +1,25 @@
 # Removes duplciates from frequency file
 
 import csv
-paths = ["../data/frequencyFiles/smMIP_Old_P7_index8_S8.sorted.rg.realigned.freq.paired.Q30.txt",
-         "../data/frequencyFiles/smMIP_Old_P7_index17_S17.sorted.rg.realigned.freq.paired.Q30.txt",
-         "../data/frequencyFiles/smMIP_P7_index20_S34.sorted.rg.realigned.freq.paired.Q30.txt",
-         "../data/frequencyFiles/smMIP_P7_index32_S46.sorted.rg.realigned.freq.paired.Q30.txt"]
+
+# Get patientTitles
+
+freqPath = '/home/labs/shlush/barakor/barakor_temp/arch3_freq/reposed/polished/'
+totalPath = '/home/labs/shlush/shared/Noa/LTR_July2018/NSR6_total.txt'
+newFreqPath = '/home/labs/shlush/shared/Noa/LTR_July2018/newFreq/'
+
+with open(totalPath,"r") as f:
+    readerList = list(csv.reader(f, delimiter='\t'))
+paths = []
+lastPatient = []
+for row in readerList:
+    if row[0] != lastPatient:
+        lastPatient = row[0]
+        paths.append(lastPatient + ".sorted.rg.realigned.freq.paired.Q30.rmbg.txt")
+
 for path in paths:
-    with open(path,"r") as f:
+    readPath = freqPath + path 
+    with open(readPath,"r") as f:
         readerList = list(csv.reader(f, delimiter='\t'))
         headings = readerList[0]
 
@@ -14,14 +27,16 @@ for path in paths:
 
     previous = []
     i = 0
+    newReaderList = []
     while i in range(0,len(readerList)):
-        if readerList[i][1] == previous:
-            readerList.pop(i)
+        if readerList[i][1] != previous:
+            newReaderList.append(readerList[i])
         previous = readerList[i][1]
         i += 1
 
-    with open(path,"w") as f:
+    writePath = newFreqPath + path
+    with open(writePath,"w") as f:
         writer = csv.writer(f, delimiter = "\t")
         writer.writerow(headings)
-        for row in readerList:
+        for row in newReaderList:
             writer.writerow(row)
