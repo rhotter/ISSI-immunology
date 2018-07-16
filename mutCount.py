@@ -1,7 +1,16 @@
 import csv
-import matplotlib.pyplot as plt
-import plotly.plotly as py
-from filter2 import patientsPositions
+
+with open("../data/NSR6_filteredTotal_dp0.txt","r") as f:
+    readerList = list(csv.reader(f, delimiter='\t'))
+
+
+
+patientTitles = []
+lastPatient = []
+for row in readerList:
+    if row[0] != lastPatient:
+        lastPatient = row[0]
+        patientTitles.append(lastPatient)
 
 mutationsCounts = []
 type = ""
@@ -9,12 +18,11 @@ type = ""
 with open("../data/sample_ids.txt", "r") as f:
     readerList = list(csv.reader(f, delimiter='\t'))
     for row in readerList:
-        for patient in patientsPositions:
-            if row[0] == patient[0]:
-                mutationsCounts.append([row[2], patient[0], len(patient) - 1])
+        for patient in patientTitles:
+            if row[0] == patient:
+                mutationsCounts.append([row[2], patient, len(patient) - 1])
 
-with open("../data/mutationCounts.txt", "w") as f:
+with open("../data/mutationCountsNSR6.txt", "w") as f:
     writer = csv.writer(f, delimiter="\t")
     for row in mutationsCounts:
         writer.writerow(row)
-print(mutationsCounts)
